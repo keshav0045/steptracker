@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101216">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data:; script-src 'self' https://unpkg.com; style-src 'self' https://unpkg.com 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'">
+  <title>Tracker | Stepwise</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://basemaps.cartocdn.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <div class="auth-shell" id="auth-screen" hidden>
+    <div class="auth-brand">TRACKER<span>.</span></div>
+    <section class="auth-card">
+      <div class="auth-mark">S</div>
+      <p class="auth-eyebrow">YOUR MOVEMENT, YOUR ACCOUNT</p>
+      <h1 id="auth-title">Welcome back</h1>
+      <p class="auth-description" id="auth-description">Sign in to continue to Stepwise.</p>
+      <div class="api-setup" id="api-setup" hidden>
+        <label for="api-server-url">Secure API server</label>
+        <div class="api-setup-row"><input id="api-server-url" type="url" inputmode="url" placeholder="https://tracker.example.com" autocomplete="url"><button type="button" id="connect-api-button">Connect</button></div>
+        <small>Use your HTTPS Stepwise server address.</small>
+      </div>
+      <form id="auth-form" novalidate>
+        <label class="auth-label" for="auth-email">Email</label>
+        <input id="auth-email" type="email" autocomplete="email" maxlength="254" required>
+        <label class="auth-label" for="auth-password">Password</label>
+        <input id="auth-password" type="password" autocomplete="current-password" minlength="12" maxlength="128" required>
+        <div id="confirm-password-group" hidden>
+          <label class="auth-label" for="auth-confirm-password">Confirm password</label>
+          <input id="auth-confirm-password" type="password" autocomplete="new-password" maxlength="128">
+        </div>
+        <p class="auth-error" id="auth-error" role="alert" aria-live="polite"></p>
+        <button class="auth-submit" id="auth-submit" type="submit">Sign in</button>
+      </form>
+      <p class="auth-switch"><span id="auth-switch-text">New to Stepwise?</span><button type="button" id="auth-switch-button">Create account</button></p>
+    </section>
+    <p class="auth-security-note">Your password is hashed before it is stored. Sessions use protected, expiring cookies.</p>
+  </div>
+
+  <div class="app-shell" id="tracker-app" hidden>
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Tracker home">TRACKER<span class="brand-dot">.</span></a>
+      <div class="header-actions">
+        <span class="account-email" id="account-email"></span>
+        <button class="signout-button" id="signout-button" type="button">Sign out</button>
+        <button class="icon-button" id="custom-target-button" aria-label="Set custom target" title="Set custom target">＋</button>
+        <button class="icon-button" id="history-button" aria-label="Workout history" title="Workout history">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3.5 2"></path><path d="M4.8 5.8 3 4v4h4"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="tracker-layout">
+      <section class="control-card" aria-label="Workout controls">
+        <div class="distance-heading">
+          <label for="target-preset">Target Distance</label>
+          <select id="target-preset" aria-label="Target distance preset">
+            <option value="1">1 km</option><option value="2">2 km</option><option value="5">5 km</option>
+            <option value="10" selected>10 km</option><option value="15">15 km</option><option value="custom">Custom…</option>
+          </select>
+        </div>
+        <div class="target-picker">
+          <button class="round-control" id="target-minus" aria-label="Decrease target distance">−</button>
+          <div class="target-number"><span id="target-value">10.0</span><small id="target-unit">km</small></div>
+          <button class="round-control" id="target-plus" aria-label="Increase target distance">+</button>
+        </div>
+        <div class="activity-row">
+          <label for="activity-select">Activity</label>
+          <select id="activity-select">
+            <option value="walking">Outdoor Walking</option>
+            <option value="running">Running</option>
+            <option value="cycling">Cycling</option>
+          </select>
+        </div>
+        <div class="live-stats" aria-live="polite">
+          <div class="primary-stat"><strong id="distance-readout">0.00</strong><span id="distance-unit">km</span><span class="stat-caption">DISTANCE</span></div>
+          <div><strong id="timer-readout">00:00:00</strong><span class="stat-caption">TIME</span></div>
+          <div><strong id="pace-readout">—</strong><span class="stat-caption">MIN / <span class="small-unit">KM</span></span></div>
+        </div>
+        <div class="progress-track"><div id="progress-fill"></div></div>
+        <div class="progress-caption"><span id="progress-label">0% complete</span><span id="remaining-label">10.00 km left</span></div>
+        <div class="completion-banner" id="completion-banner" role="status">Target distance reached · Outstanding work!</div>
+      </section>
+
+      <section class="map-panel" aria-label="Live route map">
+        <div id="map" role="application" aria-label="Interactive map showing your current location and walking route"></div>
+        <div class="map-status"><span class="status-indicator" id="status-indicator"></span><span id="gps-status">Ready when you are</span></div>
+        <div class="map-actions">
+          <button class="map-action secondary-action" id="settings-button"><span class="action-icon">⚙</span><span>Settings</span></button>
+          <button class="start-button" id="start-button"><span class="start-glyph">▶</span><span>Start</span></button>
+          <button class="map-action secondary-action" id="options-button"><span class="action-icon">•••</span><span>Options</span></button>
+        </div>
+      </section>
+    </main>
+    <footer class="footer-note"><span>GPS TRACKING</span><span id="accuracy-label">Waiting for location permission</span></footer>
+  </div>
+
+  <dialog class="bottom-sheet" id="settings-dialog">
+    <div class="sheet-handle"></div><div class="sheet-header"><h2>Settings</h2><button class="close-button" data-close="settings-dialog" aria-label="Close">×</button></div>
+    <label class="setting-row"><span>Distance unit</span><select id="unit-setting"><option value="km">Kilometres</option><option value="mi">Miles</option></select></label>
+    <label class="setting-row"><span>Map style</span><select id="map-style-setting"><option value="dark">Dark</option><option value="light">Light</option></select></label>
+    <label class="setting-row"><span>Keep map centered</span><input id="autocenter-setting" type="checkbox" checked></label>
+    <button class="danger-button" id="clear-history-button">Clear workout history</button>
+  </dialog>
+
+  <dialog class="bottom-sheet history-sheet" id="history-dialog">
+    <div class="sheet-handle"></div><div class="sheet-header"><div><p class="eyebrow">YOUR ACTIVITY</p><h2>Workout history</h2></div><button class="close-button" data-close="history-dialog" aria-label="Close">×</button></div>
+    <div id="history-list" class="history-list"></div>
+  </dialog>
+
+  <dialog class="bottom-sheet" id="options-dialog">
+    <div class="sheet-handle"></div><div class="sheet-header"><h2>Map options</h2><button class="close-button" data-close="options-dialog" aria-label="Close">×</button></div>
+    <button class="option-row" id="recenter-button"><span>◎</span><span><b>Recenter map</b><small>Move the map to your current location</small></span></button>
+    <label class="setting-row"><span>Show route</span><input id="route-visible-setting" type="checkbox" checked></label>
+    <button class="danger-button stop-workout-button" id="stop-workout-button">Stop workout</button>
+  </dialog>
+
+  <dialog class="bottom-sheet compact-sheet" id="target-dialog">
+    <div class="sheet-handle"></div><div class="sheet-header"><h2>Custom target</h2><button class="close-button" data-close="target-dialog" aria-label="Close">×</button></div>
+    <label class="input-label" for="custom-target-input">Distance (<span class="small-unit">km</span>)</label>
+    <input id="custom-target-input" type="number" min="0.5" max="200" step="0.5" value="10" inputmode="decimal">
+    <button class="confirm-button" id="save-target-button">Set target</button>
+  </dialog>
+
+  <dialog class="bottom-sheet summary-sheet" id="summary-dialog">
+    <div class="sheet-handle"></div><div class="sheet-header"><div><p class="eyebrow">SESSION COMPLETE</p><h2 id="summary-title">Walk summary</h2></div></div>
+    <div class="summary-grid"><div><strong id="summary-distance">0.00 km</strong><small>Total distance</small></div><div><strong id="summary-duration">00:00:00</strong><small>Duration</small></div><div><strong id="summary-pace">—</strong><small>Average pace</small></div><div><strong id="summary-completion">0%</strong><small>Target complete</small></div></div>
+    <p id="summary-route-note" class="summary-note">Your route is shown on the map.</p>
+    <div class="summary-buttons"><button class="secondary-button" id="discard-workout">Discard</button><button class="confirm-button" id="save-workout">Save workout</button></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

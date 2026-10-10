@@ -1,0 +1,32 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.stepwise.tracker'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.stepwise.tracker'
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName '1.0'
+    }
+
+    sourceSets {
+        main {
+            // Reuse the browser tracker directly; no duplicate web source tree to maintain.
+            assets.srcDirs += file('../../src/main/resources')
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.17.1'
+}

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: stepwise-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: STEPTRACKER_BIND_HOST
+        value: 0.0.0.0
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: ANDROID_APP_ORIGIN
+        value: https://appassets.androidplatform.net
+      - key: DATABASE_URL
+        sync: false
