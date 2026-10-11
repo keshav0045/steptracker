@@ -468,7 +468,7 @@ async function signOut(saveWorkout) {
     if (saveWorkout && state.pendingWorkout) resetWorkout();
     closeDialog('summary-dialog');
     closeDialog('signout-dialog');
-    await apiRequest('/api/auth/logout', { method: 'POST' });
+    await apiRequest('/api/auth/logout', { method: 'POST', body: '{}' });
     state.account = null;
     showAuth('signin', 'You have signed out.');
   } catch (error) {

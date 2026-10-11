@@ -151,7 +151,8 @@ public final class StepTrackerService {
                 return;
             }
             String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
-            if (!method.equals("GET") && (contentType == null || !contentType.split(";", 2)[0].trim().equalsIgnoreCase("application/json"))) {
+            boolean requestNeedsJson = !method.equals("GET") && !path.equals("/api/auth/logout");
+            if (requestNeedsJson && (contentType == null || !contentType.split(";", 2)[0].trim().equalsIgnoreCase("application/json"))) {
                 send(exchange, 415, error("unsupported_media_type", "Content-Type must be application/json"));
                 return;
             }
