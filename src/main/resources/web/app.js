@@ -303,7 +303,7 @@ function handleGpsError(error) {
   }
 }
 
-function stopWorkout() {
+function stopWorkout(showSummary = true) {
   if (state.mode === 'idle') return;
   gps.stop();
   timer.pause();
@@ -324,7 +324,7 @@ function stopWorkout() {
   fillSummary(state.pendingWorkout);
   closeDialog('options-dialog');
   updateStartButton();
-  openDialog('summary-dialog');
+  if (showSummary) openDialog('summary-dialog');
 }
 
 function fillSummary(workout) {
@@ -459,18 +459,36 @@ $('#connect-api-button').addEventListener('click', async () => {
     $('#auth-error').textContent = error.message;
   } finally { button.disabled = false; }
 });
-$('#signout-button').addEventListener('click', async () => {
-  if (state.mode !== 'idle' || state.pendingWorkout) {
-    showToast('Finish or discard the current workout before signing out.');
-    return;
-  }
+async function signOut(saveWorkout) {
   $('#signout-button').disabled = true;
   try {
+    if (saveWorkout && (state.mode === 'tracking' || state.mode === 'paused')) stopWorkout(false);
+    if (state.pendingWorkout && saveWorkout) WorkoutHistory.save(state.pendingWorkout);
+    if (!saveWorkout && (state.mode !== 'idle' || state.pendingWorkout)) resetWorkout();
+    if (saveWorkout && state.pendingWorkout) resetWorkout();
+    closeDialog('summary-dialog');
+    closeDialog('signout-dialog');
     await apiRequest('/api/auth/logout', { method: 'POST' });
     state.account = null;
     showAuth('signin', 'You have signed out.');
-  } catch (error) { showToast(`Could not sign out: ${error.message}`); }
+  } catch (error) {
+    showToast(`Could not sign out: ${error.message}`);
+  }
   finally { $('#signout-button').disabled = false; }
+}
+$('#signout-button').addEventListener('click', () => {
+  if (state.mode !== 'idle' || state.pendingWorkout) openDialog('signout-dialog');
+  else signOut(false);
+});
+$('#signout-save-workout').addEventListener('click', () => signOut(true));
+$('#signout-discard-workout').addEventListener('click', () => signOut(false));
+$('#signout-cancel').addEventListener('click', () => closeDialog('signout-dialog'));
+$('#signout-dialog').addEventListener('close', () => {
+  if (state.pendingWorkout && !$('#summary-dialog').open) openDialog('summary-dialog');
+});
+$('#summary-signout').addEventListener('click', () => {
+  closeDialog('summary-dialog');
+  openDialog('signout-dialog');
 });
 $('#settings-button').addEventListener('click', () => openDialog('settings-dialog'));
 $('#history-button').addEventListener('click', () => { renderHistory(); openDialog('history-dialog'); });

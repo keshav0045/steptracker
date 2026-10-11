@@ -130,7 +130,17 @@
     <div class="sheet-handle"></div><div class="sheet-header"><div><p class="eyebrow">SESSION COMPLETE</p><h2 id="summary-title">Walk summary</h2></div></div>
     <div class="summary-grid"><div><strong id="summary-distance">0.00 km</strong><small>Total distance</small></div><div><strong id="summary-duration">00:00:00</strong><small>Duration</small></div><div><strong id="summary-pace">—</strong><small>Average pace</small></div><div><strong id="summary-completion">0%</strong><small>Target complete</small></div></div>
     <p id="summary-route-note" class="summary-note">Your route is shown on the map.</p>
-    <div class="summary-buttons"><button class="secondary-button" id="discard-workout">Discard</button><button class="confirm-button" id="save-workout">Save workout</button></div>
+    <div class="summary-buttons"><button class="secondary-button" id="discard-workout">Discard</button><button class="confirm-button" id="save-workout">Save workout</button><button class="secondary-button summary-signout-button" id="summary-signout">Sign out</button></div>
+  </dialog>
+
+  <dialog class="bottom-sheet compact-sheet" id="signout-dialog">
+    <div class="sheet-handle"></div><div class="sheet-header"><h2>Sign out?</h2><button class="close-button" data-close="signout-dialog" aria-label="Close">×</button></div>
+    <p class="summary-note">You have a workout in progress or an unsaved workout summary. Save it to this device before signing out, or discard it.</p>
+    <div class="signout-actions">
+      <button class="confirm-button" id="signout-save-workout">Save workout &amp; sign out</button>
+      <button class="danger-button" id="signout-discard-workout">Discard workout &amp; sign out</button>
+      <button class="secondary-button" id="signout-cancel">Cancel</button>
+    </div>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
