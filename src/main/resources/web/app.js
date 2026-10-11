@@ -6,6 +6,7 @@ import { WorkoutTimer } from './workout-timer.js';
 
 const $ = selector => document.querySelector(selector);
 const API_BASE_KEY = 'stepwise.api-base.v1';
+let authMode = 'signin';
 const isAndroidApp = location.hostname === 'appassets.androidplatform.net';
 let apiBase = isAndroidApp ? localStorage.getItem(API_BASE_KEY) || '' : location.origin;
 if (isAndroidApp && apiBase) {
@@ -63,6 +64,7 @@ async function apiRequest(path, options = {}) {
 }
 
 function showAuth(mode = 'signin', error = '') {
+  authMode = mode;
   $('#tracker-app').hidden = true;
   $('#auth-screen').hidden = false;
   const creating = mode === 'signup';
@@ -414,7 +416,6 @@ $('#save-target-button').addEventListener('click', () => {
 });
 $('#activity-select').addEventListener('change', event => { state.activity = event.target.value; });
 $('#start-button').addEventListener('click', beginFromButton);
-let authMode = 'signin';
 $('#auth-switch-button').addEventListener('click', () => {
   authMode = authMode === 'signin' ? 'signup' : 'signin';
   showAuth(authMode);
