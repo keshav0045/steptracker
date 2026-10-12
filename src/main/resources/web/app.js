@@ -431,7 +431,8 @@ $('#auth-form').addEventListener('submit', async event => {
   $('#auth-submit').disabled = true;
   $('#auth-error').textContent = '';
   try {
-    const user = await apiRequest(`/api/auth/${authMode}`, { method: 'POST', body: JSON.stringify({ email, password }) });
+    const endpoint = authMode === 'signup' ? 'signup' : 'login';
+    const user = await apiRequest(`/api/auth/${endpoint}`, { method: 'POST', body: JSON.stringify({ email, password }) });
     $('#auth-password').value = '';
     $('#auth-confirm-password').value = '';
     setSignedIn(user);

@@ -12,7 +12,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.TimeUnit;
 
-/** A small, local-first daily step tracker. */
+
 public final class StepTrackerApp extends JFrame {
     private static Color INK = new Color(28, 48, 40);
     private static Color MUTED = new Color(113, 130, 119);
